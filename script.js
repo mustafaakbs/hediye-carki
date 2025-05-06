@@ -4,41 +4,42 @@ class WheelGame {
         this.ctx = this.canvas.getContext('2d');
         this.spinBtn = document.getElementById('spin-btn');
         this.resultDisplay = document.getElementById('result');
-        this.dateDisplay = document.getElementById('currentDateTime');
+        
+        // Kullanıcı bilgileri
+        this.userName = document.getElementById('userName');
+        this.dateTimeDisplay = document.getElementById('currentDateTime');
         
         this.prizes = [
-            { text: '%30 İndirimli\nFiltre Kahve', color: '#FF5252' },
-            { text: 'Cheesecake\n%50 İndirimli', color: '#448AFF' },
-            { text: '1 Soğuk İçecek\nBizden', color: '#7C4DFF' },
-            { text: 'Bugün\nŞansın Yok 😅', color: '#FF4081' },
-            { text: 'Tatlı + Kahve\n%20 İndirim', color: '#40C4FF' },
-            { text: 'Tekrar\nDene!', color: '#64FFDA' },
-            { text: 'Kurabiye\nHediye', color: '#FF6E40' },
-            { text: 'Arkadaşına da\nKazandır!', color: '#69F0AE' }
+            { text: 'Kurabiye\nHediye', color: '#FF6B6B' },
+            { text: 'Arkadaşına da\nKazandır!', color: '#4ECDC4' },
+            { text: '%30 İndirimli\nFiltre Kahve', color: '#45B7D1' },
+            { text: 'Cheesecake\n%50 İndirimli', color: '#96CEB4' },
+            { text: '1 Soğuk İçecek\nBizden', color: '#FFEEAD' },
+            { text: 'Bugün\nŞansın Yok 😅', color: '#D4A5A5' },
+            { text: 'Tatlı + Kahve\n%20 İndirim', color: '#9AC1D9' },
+            { text: 'Tekrar\nDene!', color: '#FFD93D' }
         ];
 
         this.currentRotation = 0;
         this.isSpinning = false;
         this.sliceAngle = (Math.PI * 2) / this.prizes.length;
         
-        this.updateDateTime();
         this.init();
         this.setupEventListeners();
     }
 
-    updateDateTime() {
-        const now = new Date();
-        this.dateDisplay.textContent = now.toISOString().slice(0, 19).replace('T', ' ');
+    init() {
+        this.setupCanvas();
+        this.drawWheel();
     }
 
-    init() {
+    setupCanvas() {
         const size = Math.min(
             this.canvas.parentElement.offsetWidth,
             this.canvas.parentElement.offsetHeight
         );
         this.canvas.width = size;
         this.canvas.height = size;
-        this.drawWheel();
     }
 
     drawWheel() {
@@ -57,46 +58,40 @@ class WheelGame {
 
         // Dilimler
         this.prizes.forEach((prize, i) => {
+            const startAngle = (i * this.sliceAngle) - Math.PI / 2;
+            const endAngle = ((i + 1) * this.sliceAngle) - Math.PI / 2;
+
+            // Dilim çizimi
             ctx.beginPath();
             ctx.moveTo(center, center);
-            ctx.arc(
-                center, center, radius,
-                i * this.sliceAngle - Math.PI / 2,
-                (i + 1) * this.sliceAngle - Math.PI / 2
-            );
+            ctx.arc(center, center, radius, startAngle, endAngle);
             ctx.lineTo(center, center);
             ctx.fillStyle = prize.color;
             ctx.fill();
             
+            // Dilim kenarı
             ctx.strokeStyle = '#ffffff40';
             ctx.lineWidth = 2;
             ctx.stroke();
-        });
 
-        // Metinler
-        ctx.save();
-        ctx.translate(center, center);
-
-        this.prizes.forEach((prize, i) => {
+            // Text
             ctx.save();
-            
-            const angle = (i * this.sliceAngle) + (this.sliceAngle / 2) - Math.PI / 2;
-            ctx.rotate(angle);
+            ctx.translate(center, center);
+            ctx.rotate(startAngle + this.sliceAngle / 2);
             
             ctx.fillStyle = '#FFFFFF';
             ctx.font = 'bold 16px Poppins';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
+            // Text outline
             ctx.strokeStyle = '#00000080';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 3;
             
             const lines = prize.text.split('\n');
             const lineHeight = 25;
-            const totalHeight = (lines.length - 1) * lineHeight;
-            
             lines.forEach((line, j) => {
-                const y = (j * lineHeight) - (totalHeight / 2);
+                const y = (j * lineHeight) - ((lines.length - 1) * lineHeight / 2);
                 const x = radius * 0.65;
                 
                 ctx.strokeText(line, x, y);
@@ -105,8 +100,6 @@ class WheelGame {
             
             ctx.restore();
         });
-
-        ctx.restore();
     }
 
     spin() {
@@ -118,8 +111,9 @@ class WheelGame {
         
         const prizeIndex = Math.floor(Math.random() * this.prizes.length);
         const extraSpins = 5 + Math.floor(Math.random() * 5);
+        const baseAngle = 270;
         const targetAngle = extraSpins * 360 + (prizeIndex * (360 / this.prizes.length));
-        const finalRotation = targetAngle + 90; // 90 derece offset işaretçi için
+        const finalRotation = targetAngle + baseAngle;
         
         this.currentRotation += finalRotation;
         this.canvas.style.transform = `rotate(${this.currentRotation}deg)`;
@@ -137,11 +131,10 @@ class WheelGame {
         this.spinBtn.addEventListener('click', () => this.spin());
         
         window.addEventListener('resize', () => {
-            requestAnimationFrame(() => this.init());
+            requestAnimationFrame(() => {
+                this.init();
+            });
         });
-        
-        // Her dakika tarih/saat güncelleme
-        setInterval(() => this.updateDateTime(), 60000);
     }
 }
 
