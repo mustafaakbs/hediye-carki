@@ -32,27 +32,30 @@
         .page-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
             min-height: 100vh;
-            padding-top: 2rem;
+            padding: 2rem 1rem;
         }
 
         .logo-container {
-            text-align: center;
             margin-bottom: 2rem;
+            width: 100%;
+            max-width: 200px;
+            text-align: center;
         }
 
         #logo {
-            max-width: 200px;
+            width: 100%;
             height: auto;
         }
 
         .game-container {
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 2rem;
-            padding: 0 1rem;
+            width: 100%;
+            max-width: 500px;
         }
 
         .wheel-outer-border {
@@ -83,6 +86,8 @@
             z-index: 10;
             width: 30px;
             height: 40px;
+            display: flex;
+            justify-content: center;
         }
 
         .pointer-inner {
@@ -206,7 +211,7 @@
                 height: 260px;
             }
 
-            #logo {
+            .logo-container {
                 max-width: 150px;
             }
         }
@@ -287,10 +292,11 @@
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Dilimler
+                // Dilimler ve yazılar
                 this.prizes.forEach((prize, i) => {
-                    const startAngle = (i * this.sliceAngle) - Math.PI / 2;
-                    const endAngle = ((i + 1) * this.sliceAngle) - Math.PI / 2;
+                    // Başlangıç açısını -90 derece + yarım dilim kadar kaydır
+                    const startAngle = (i * this.sliceAngle) - Math.PI / 2 + (this.sliceAngle / 2);
+                    const endAngle = ((i + 1) * this.sliceAngle) - Math.PI / 2 + (this.sliceAngle / 2);
 
                     ctx.beginPath();
                     ctx.moveTo(center, center);
@@ -339,8 +345,12 @@
                 
                 const prizeIndex = Math.floor(Math.random() * this.prizes.length);
                 const extraSpins = 5 + Math.floor(Math.random() * 5);
-                const baseAngle = 270;
-                const targetAngle = extraSpins * 360 + (prizeIndex * (360 / this.prizes.length));
+                
+                // Dilim ortası için açı hesaplaması
+                const sliceDegree = 360 / this.prizes.length;
+                const halfSlice = sliceDegree / 2;
+                const baseAngle = 270 - halfSlice; // İşaretçi dilim ortasına gelecek
+                const targetAngle = extraSpins * 360 + (prizeIndex * sliceDegree);
                 const finalRotation = targetAngle + baseAngle;
                 
                 this.currentRotation += finalRotation;
@@ -349,7 +359,11 @@
                 setTimeout(() => {
                     this.isSpinning = false;
                     this.spinBtn.disabled = false;
-                    const prizeText = this.prizes[prizeIndex].text.replace('\n', ' ');
+                    
+                    // Doğru prize index'ini hesapla
+                    const normalizedRotation = this.currentRotation % 360;
+                    const currentPrizeIndex = (Math.floor((normalizedRotation - baseAngle) / sliceDegree) + this.prizes.length) % this.prizes.length;
+                    const prizeText = this.prizes[currentPrizeIndex].text.replace('\n', ' ');
                     this.resultDisplay.textContent = `🎉 ${prizeText}`;
                     this.resultDisplay.classList.add('show');
                 }, 4000);
