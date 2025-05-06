@@ -3,44 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kahve Dükkanı Çarkıfelek</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>Çark Oyunu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388E3C;
+            --background-color: #121212;
+            --surface-color: #1E1E1E;
+            --text-color: #FFFFFF;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --highlight-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        #logo {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+
+        .wheel-outer-border {
+            background: var(--surface-color);
+            padding: 20px;
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--shadow-color);
+            position: relative;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .pointer {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: 10;
+            width: 30px;
+            height: 40px;
+        }
+
+        .pointer-inner {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid var(--primary-color);
+            filter: drop-shadow(0 0 5px var(--shadow-color));
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: var(--surface-color);
+            border-radius: 50%;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px var(--shadow-color);
+        }
+
+        .wheel-center-inner {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            box-shadow: inset 0 0 15px var(--shadow-color);
+        }
+
+        .spin-button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+            background: var(--secondary-color);
+        }
+
+        .spin-button:active {
+            transform: translateY(0);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-display {
+            width: 100%;
+            max-width: 400px;
+            min-height: 60px;
+            padding: 15px;
+            background: var(--surface-color);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px var(--shadow-color);
+        }
+
+        .result-display.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 500px) {
+            .wheel-container {
+                width: 300px;
+                height: 300px;
+            }
+
+            .pointer {
+                width: 24px;
+                height: 32px;
+            }
+
+            .pointer-inner {
+                border-left: 12px solid transparent;
+                border-right: 12px solid transparent;
+                border-top: 24px solid var(--primary-color);
+            }
+
+            .wheel-center {
+                width: 45px;
+                height: 45px;
+            }
+
+            .wheel-center-inner {
+                width: 30px;
+                height: 30px;
+            }
+
+            .spin-button {
+                padding: 12px 30px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .wheel-container {
+                width: 260px;
+                height: 260px;
+            }
+
+            #logo {
+                max-width: 150px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="page-container">
-        <header class="header">
-            <div class="user-info">
-                <span id="userName">@mustafaakbs</span>
-            </div>
-            <div class="logo-container">
-                <img id="logo" src="your-logo.png" alt="Kahve Dükkanı Logo">
-            </div>
-        </header>
+        <div class="logo-container">
+            <img id="logo" src="your-logo.png" alt="Logo">
+        </div>
 
-        <main class="game-container">
-            <div class="wheel-section">
-                <div class="wheel-outer-border">
-                    <div class="wheel-container">
-                        <div id="wheelPointer" class="pointer">
-                            <div class="pointer-inner"></div>
-                        </div>
-                        <canvas id="wheel"></canvas>
-                        <div class="wheel-center">
-                            <div class="wheel-center-inner"></div>
-                        </div>
+        <div class="game-container">
+            <div class="wheel-outer-border">
+                <div class="wheel-container">
+                    <div class="pointer">
+                        <div class="pointer-inner"></div>
+                    </div>
+                    <canvas id="wheel"></canvas>
+                    <div class="wheel-center">
+                        <div class="wheel-center-inner"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="controls">
-                <button id="spin-btn" class="spin-button">
-                    <span class="btn-text">ÇARKI DÖNDÜR</span>
-                </button>
-                <div id="result" class="result-display"></div>
-            </div>
-        </main>
+            <button id="spin-btn" class="spin-button">ÇARKI DÖNDÜR</button>
+            <div id="result" class="result-display"></div>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        class WheelGame {
+            constructor() {
+                this.canvas = document.getElementById('wheel');
+                this.ctx = this.canvas.getContext('2d');
+                this.spinBtn = document.getElementById('spin-btn');
+                this.resultDisplay = document.getElementById('result');
+                
+                this.prizes = [
+                    { text: 'Kurabiye\nHediye', color: '#FF6B6B' },
+                    { text: 'Arkadaşına da\nKazandır!', color: '#4ECDC4' },
+                    { text: '%30 İndirimli\nFiltre Kahve', color: '#45B7D1' },
+                    { text: 'Cheesecake\n%50 İndirimli', color: '#96CEB4' },
+                    { text: '1 Soğuk İçecek\nBizden', color: '#FFEEAD' },
+                    { text: 'Bugün\nŞansın Yok 😅', color: '#D4A5A5' },
+                    { text: 'Tatlı + Kahve\n%20 İndirim', color: '#9AC1D9' },
+                    { text: 'Tekrar\nDene!', color: '#FFD93D' }
+                ];
+
+                this.currentRotation = 0;
+                this.isSpinning = false;
+                this.sliceAngle = (Math.PI * 2) / this.prizes.length;
+                
+                this.init();
+                this.setupEventListeners();
+            }
+
+            init() {
+                const size = Math.min(
+                    this.canvas.parentElement.offsetWidth,
+                    this.canvas.parentElement.offsetHeight
+                );
+                this.canvas.width = size;
+                this.canvas.height = size;
+                this.drawWheel();
+            }
+
+            drawWheel() {
+                const ctx = this.ctx;
+                const center = this.canvas.width / 2;
+                const radius = center - 10;
+
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Dış çerçeve
+                ctx.beginPath();
+                ctx.arc(center, center, radius + 5, 0, Math.PI * 2);
+                ctx.strokeStyle = '#ffffff20';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Dilimler
+                this.prizes.forEach((prize, i) => {
+                    const startAngle = (i * this.sliceAngle) - Math.PI / 2;
+                    const endAngle = ((i + 1) * this.sliceAngle) - Math.PI / 2;
+
+                    ctx.beginPath();
+                    ctx.moveTo(center, center);
+                    ctx.arc(center, center, radius, startAngle, endAngle);
+                    ctx.lineTo(center, center);
+                    ctx.fillStyle = prize.color;
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#ffffff40';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Text
+                    ctx.save();
+                    ctx.translate(center, center);
+                    ctx.rotate(startAngle + this.sliceAngle / 2);
+                    
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = 'bold 16px Poppins';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    ctx.strokeStyle = '#00000080';
+                    ctx.lineWidth = 3;
+                    
+                    const lines = prize.text.split('\n');
+                    const lineHeight = 25;
+                    lines.forEach((line, j) => {
+                        const y = (j * lineHeight) - ((lines.length - 1) * lineHeight / 2);
+                        const x = radius * 0.65;
+                        
+                        ctx.strokeText(line, x, y);
+                        ctx.fillText(line, x, y);
+                    });
+                    
+                    ctx.restore();
+                });
+            }
+
+            spin() {
+                if (this.isSpinning) return;
+                
+                this.isSpinning = true;
+                this.spinBtn.disabled = true;
+                this.resultDisplay.classList.remove('show');
+                
+                const prizeIndex = Math.floor(Math.random() * this.prizes.length);
+                const extraSpins = 5 + Math.floor(Math.random() * 5);
+                const baseAngle = 270;
+                const targetAngle = extraSpins * 360 + (prizeIndex * (360 / this.prizes.length));
+                const finalRotation = targetAngle + baseAngle;
+                
+                this.currentRotation += finalRotation;
+                this.canvas.style.transform = `rotate(${this.currentRotation}deg)`;
+
+                setTimeout(() => {
+                    this.isSpinning = false;
+                    this.spinBtn.disabled = false;
+                    const prizeText = this.prizes[prizeIndex].text.replace('\n', ' ');
+                    this.resultDisplay.textContent = `🎉 ${prizeText}`;
+                    this.resultDisplay.classList.add('show');
+                }, 4000);
+            }
+
+            setupEventListeners() {
+                this.spinBtn.addEventListener('click', () => this.spin());
+                window.addEventListener('resize', () => {
+                    requestAnimationFrame(() => this.init());
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new WheelGame();
+        });
+    </script>
 </body>
 </html>
