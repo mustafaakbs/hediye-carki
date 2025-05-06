@@ -1,3 +1,4 @@
+/* Base Styles */
 :root {
     --primary-color: #4CAF50;
     --secondary-color: #388E3C;
@@ -23,12 +24,14 @@ body {
     line-height: 1.5;
 }
 
+/* Layout */
 .page-container {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
+/* Header */
 .header {
     background-color: var(--surface-color);
     padding: 1rem 2rem;
@@ -42,19 +45,10 @@ body {
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-color);
-    opacity: 0.9;
 }
 
 #userName {
     color: var(--primary-color);
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    opacity: 0.8;
 }
 
 .logo-container {
@@ -68,6 +62,7 @@ body {
     object-fit: contain;
 }
 
+/* Game Container */
 .game-container {
     flex: 1;
     display: flex;
@@ -79,6 +74,7 @@ body {
     margin: 0 auto;
 }
 
+/* Wheel Section */
 .wheel-section {
     width: 100%;
     display: flex;
@@ -105,25 +101,34 @@ canvas {
     transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
 }
 
+/* Pointer */
 .pointer {
     position: absolute;
-    top: -2px;
+    top: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-50%);
     z-index: 10;
     width: 30px;
     height: 30px;
+    background: var(--surface-color);
+    border-radius: 5px 5px 0 0;
+    padding: 5px;
+    box-shadow: 0 0 10px var(--shadow-color);
+    display: flex;
+    justify-content: center;
+    border: 2px solid var(--highlight-color);
+    border-bottom: none;
 }
 
 .pointer-inner {
-    width: 0;
-    height: 0;
+    width: 100%;
+    height: 100%;
     border-left: 15px solid transparent;
     border-right: 15px solid transparent;
     border-top: 30px solid var(--primary-color);
-    filter: drop-shadow(0 0 5px var(--shadow-color));
 }
 
+/* Wheel Center */
 .wheel-center {
     position: absolute;
     top: 50%;
@@ -148,6 +153,7 @@ canvas {
     box-shadow: inset 0 0 15px var(--shadow-color);
 }
 
+/* Controls */
 .controls {
     width: 100%;
     display: flex;
@@ -184,6 +190,7 @@ canvas {
     transform: none;
 }
 
+/* Result Display */
 .result-display {
     width: 100%;
     max-width: 400px;
@@ -205,6 +212,7 @@ canvas {
     transform: translateY(0);
 }
 
+/* Responsive Design */
 @media (max-width: 500px) {
     .wheel-container {
         width: 300px;
@@ -250,7 +258,7 @@ canvas {
     }
 
     .user-info {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
     }
 
     .logo-container {
