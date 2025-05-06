@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şans Çarkı | Kahve Dükkanı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-container">
+        <header class="header">
+            <div class="logo-container">
+                <img id="logo" src="your-logo.png" alt="Kahve Dükkanı Logo">
+            </div>
+            <div class="date-display">
+                <span id="currentDateTime"></span>
+            </div>
+        </header>
+        
+        <main class="game-container">
+            <div class="wheel-outer-border">
+                <div class="wheel-container">
+                    <div id="pointer" class="pointer">
+                        <div class="pointer-inner"></div>
+                    </div>
+                    <canvas id="wheel"></canvas>
+                    <div class="wheel-center">
+                        <div class="wheel-center-inner"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="spin-btn">
+                    <span class="btn-text">ÇARKI DÖNDÜR</span>
+                </button>
+                <div id="result" class="result-display"></div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
