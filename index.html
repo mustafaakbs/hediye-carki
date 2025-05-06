@@ -13,7 +13,6 @@
             --surface-color: #1E1E1E;
             --text-color: #FFFFFF;
             --shadow-color: rgba(0, 0, 0, 0.5);
-            --highlight-color: rgba(255, 255, 255, 0.1);
         }
 
         * {
@@ -80,14 +79,12 @@
 
         .pointer {
             position: absolute;
-            top: 0;
+            top: -10px;
             left: 50%;
-            transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%);
             z-index: 10;
             width: 30px;
             height: 40px;
-            display: flex;
-            justify-content: center;
         }
 
         .pointer-inner {
@@ -269,13 +266,17 @@
             }
 
             init() {
+                this.setupCanvas();
+                this.drawWheel();
+            }
+
+            setupCanvas() {
                 const size = Math.min(
                     this.canvas.parentElement.offsetWidth,
                     this.canvas.parentElement.offsetHeight
                 );
                 this.canvas.width = size;
                 this.canvas.height = size;
-                this.drawWheel();
             }
 
             drawWheel() {
@@ -292,11 +293,10 @@
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // Dilimler ve yazılar
+                // Dilimler
                 this.prizes.forEach((prize, i) => {
-                    // Başlangıç açısını -90 derece + yarım dilim kadar kaydır
-                    const startAngle = (i * this.sliceAngle) - Math.PI / 2 + (this.sliceAngle / 2);
-                    const endAngle = ((i + 1) * this.sliceAngle) - Math.PI / 2 + (this.sliceAngle / 2);
+                    const startAngle = ((i * this.sliceAngle) - Math.PI / 2) + (this.sliceAngle / 2);
+                    const endAngle = (((i + 1) * this.sliceAngle) - Math.PI / 2) + (this.sliceAngle / 2);
 
                     ctx.beginPath();
                     ctx.moveTo(center, center);
@@ -312,7 +312,7 @@
                     // Text
                     ctx.save();
                     ctx.translate(center, center);
-                    ctx.rotate(startAngle + this.sliceAngle / 2);
+                    ctx.rotate(startAngle + (this.sliceAngle / 2));
                     
                     ctx.fillStyle = '#FFFFFF';
                     ctx.font = 'bold 16px Poppins';
@@ -345,25 +345,17 @@
                 
                 const prizeIndex = Math.floor(Math.random() * this.prizes.length);
                 const extraSpins = 5 + Math.floor(Math.random() * 5);
-                
-                // Dilim ortası için açı hesaplaması
                 const sliceDegree = 360 / this.prizes.length;
-                const halfSlice = sliceDegree / 2;
-                const baseAngle = 270 - halfSlice; // İşaretçi dilim ortasına gelecek
-                const targetAngle = extraSpins * 360 + (prizeIndex * sliceDegree);
-                const finalRotation = targetAngle + baseAngle;
+                const targetDegree = prizeIndex * sliceDegree;
+                const rotationDegree = (extraSpins * 360) + (360 - targetDegree + sliceDegree / 2);
                 
-                this.currentRotation += finalRotation;
+                this.currentRotation += rotationDegree;
                 this.canvas.style.transform = `rotate(${this.currentRotation}deg)`;
 
                 setTimeout(() => {
                     this.isSpinning = false;
                     this.spinBtn.disabled = false;
-                    
-                    // Doğru prize index'ini hesapla
-                    const normalizedRotation = this.currentRotation % 360;
-                    const currentPrizeIndex = (Math.floor((normalizedRotation - baseAngle) / sliceDegree) + this.prizes.length) % this.prizes.length;
-                    const prizeText = this.prizes[currentPrizeIndex].text.replace('\n', ' ');
+                    const prizeText = this.prizes[prizeIndex].text.replace('\n', ' ');
                     this.resultDisplay.textContent = `🎉 ${prizeText}`;
                     this.resultDisplay.classList.add('show');
                 }, 4000);
