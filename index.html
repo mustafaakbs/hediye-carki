@@ -1,21 +1,340 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şans Çarkı</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coffee Shop Çekilişi</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #F5E6D3;
+      font-family: 'Georgia', serif;
+      padding: 20px;
+      overscroll-behavior: none;
+    }
+
+    .logo {
+      width: 250px;
+      height: auto;
+      margin-bottom: 30px;
+      -webkit-user-select: none;
+      user-select: none;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .slot-container {
+      background-color: #B87D6A;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 30px rgba(139, 76, 69, 0.4);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .slot-window {
+      background-color: #F2E8CF;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      height: 100px;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #A77E58;
+      transition: height 0.3s ease;
+    }
+
+    .slot-items {
+      position: absolute;
+      width: 100%;
+      transition: transform 0.05s ease-out;
+    }
+
+    .prize-item {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #8B4C45;
+      padding: 10px;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .prize-item:nth-child(8n+1) { background-color: #FFE4C4; }
+    .prize-item:nth-child(8n+2) { background-color: #FFDAB9; }
+    .prize-item:nth-child(8n+3) { background-color: #F5DEB3; }
+    .prize-item:nth-child(8n+4) { background-color: #DEB887; }
+    .prize-item:nth-child(8n+5) { background-color: #FFE4B5; }
+    .prize-item:nth-child(8n+6) { background-color: #FAEBD7; }
+    .prize-item:nth-child(8n+7) { background-color: #FFE4E1; }
+    .prize-item:nth-child(8n+8) { background-color: #FFF0F5; }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    #spinButton {
+      padding: 15px 40px;
+      font-size: 18px;
+      background-color: #A77E58;
+      color: #F2E8CF;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 70%;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: background-color 0.3s;
+      touch-action: manipulation;
+    }
+
+    #resetButton {
+      padding: 15px 20px;
+      font-size: 18px;
+      background-color: #8B4C45;
+      color: #F2E8CF;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 30%;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: background-color 0.3s;
+    }
+
+    #spinButton:disabled,
+    #resetButton:disabled {
+      background-color: #94836D;
+      cursor: not-allowed;
+    }
+
+    #result {
+      font-size: 22px;
+      color: #8B4C45;
+      text-align: center;
+      padding: 20px;
+      word-wrap: break-word;
+    }
+
+    @media (max-width: 480px) {
+      .logo {
+        width: 200px;
+      }
+
+      .prize-item {
+        font-size: 16px;
+        padding: 5px;
+      }
+
+      #spinButton,
+      #resetButton {
+        font-size: 16px;
+        padding: 12px 15px;
+      }
+
+      #result {
+        font-size: 18px;
+        padding: 15px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Şans Çarkı</h1>
-        <div class="wheel-container">
-            <div class="pointer"></div>
-            <canvas id="wheel" width="400" height="400"></canvas>
-            <button id="spin-btn">Çarkı Döndür</button>
-        </div>
-        <div id="result"></div>
+  <img src="https://akmercanmardingaz.com.tr/logo.svg" alt="Logo" class="logo">
+
+  <div class="slot-container">
+    <div class="slot-window">
+      <div class="slot-items" id="slotItems"></div>
     </div>
-    <script src="script.js"></script>
+    <div class="button-container">
+      <button id="spinButton">Çekilişi Başlat</button>
+      <button id="resetButton">Sıfırla</button>
+    </div>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    // DOM Element Değişkenleri
+    const spinButton = document.getElementById('spinButton');    // Çevirme butonu
+    const resetButton = document.getElementById('resetButton');  // Sıfırlama butonu
+    const result = document.getElementById('result');           // Sonuç mesajı alanı
+    const slotItems = document.getElementById('slotItems');     // Slot öğelerinin konteyneri
+
+    // Sabit Değişkenler (Constants)
+    const PRIZE_HEIGHT = 100;        // Her bir ödül öğesinin yüksekliği (px)
+    const SPIN_SPEED = 20;           // Dönüş hızı (px/frame)
+    const EXTRA_SPINS = 2;           // Bırakıldıktan sonra kaç tur döneceği
+    const STOP_DURATION = 3000;      // Durma animasyonunun süresi (ms)
+
+    // Ödül Listesi
+    const prizes = [
+      'Filtre Kahve - %30 İndirim',
+      'Tatlı - %20 İndirim',
+      'Şansını Tekrar Dene',
+      'Kahve + Tatlı - %40 İndirim',
+      'Americano - 2. İkincisi %50 İndirim',
+      'Tatlı - %25 İndirim',
+      'Espresso - 2. si %50 İndirim',
+      'Kahve - %20 İndirim'
+              'Üzgünüm! - Kazanamadınız',
+      'Tatlı - %20 İndirim',
+      'Şansını Tekrar Dene',
+      'seçeceğin Bir Kahve - %30 İndirim',
+      'Bouble Tea - %40 İndirim',
+      'Tatlı - %25 İndirim',
+      'Latte - 2. si %50 İndirim',
+      'Üzgünüm! - Kazanamadınız'
+    ];
+
+    // Durum Değişkenleri (State Variables)
+    let isSpinning = false;          // Dönüş durumu
+    let spinInterval = null;         // Dönüş animasyonu referansı
+    let currentTranslateY = 0;       // Mevcut dikey pozisyon
+
+    function createSlotItems() {
+      try {
+        const allPrizes = Array(8).fill(prizes).flat();
+        slotItems.innerHTML = allPrizes
+          .map(prize => `<div class="prize-item">${prize}</div>`)
+          .join('');
+        resetPosition();
+      } catch (error) {
+        console.error('Slot oluşturma hatası:', error);
+      }
+    }
+
+    function resetPosition() {
+      slotItems.style.transition = 'none';
+      slotItems.style.transform = 'translateY(0)';
+      void slotItems.offsetHeight;
+      currentTranslateY = 0;
+    }
+
+    function spin() {
+      if (isSpinning) return;
+
+      try {
+        isSpinning = true;
+        spinButton.disabled = true;
+        resetButton.disabled = true;
+        result.textContent = '';
+
+        slotItems.style.transition = 'none';
+
+        function animate() {
+          currentTranslateY += SPIN_SPEED;
+          if (currentTranslateY >= prizes.length * PRIZE_HEIGHT) {
+            currentTranslateY = 0;
+          }
+          slotItems.style.transform = `translateY(-${currentTranslateY}px)`;
+          spinInterval = requestAnimationFrame(animate);
+        }
+
+        spinInterval = requestAnimationFrame(animate);
+
+      } catch (error) {
+        console.error('Çekiliş hatası:', error);
+        stopSpin();
+        result.textContent = 'Bir hata oluştu, tekrar deneyiniz.';
+      }
+    }
+
+    function stopSpin() {
+      if (!isSpinning) return;
+
+      if (spinInterval) {
+        cancelAnimationFrame(spinInterval);
+      }
+
+      const extraDistance = (prizes.length * EXTRA_SPINS) * PRIZE_HEIGHT;
+      const finalIndex = Math.floor(Math.random() * prizes.length);
+      const targetPosition = currentTranslateY + extraDistance + (finalIndex * PRIZE_HEIGHT);
+
+      slotItems.style.transition = `transform ${STOP_DURATION}ms cubic-bezier(0.3, 0.1, 0.3, 1)`;
+      slotItems.style.transform = `translateY(-${targetPosition}px)`;
+
+      setTimeout(() => {
+        isSpinning = false;
+        spinButton.disabled = false;
+        resetButton.disabled = false;
+        const winningPrize = prizes[finalIndex];
+        result.textContent = `Kazandınız: ${winningPrize}`;
+        
+        currentTranslateY = finalIndex * PRIZE_HEIGHT;
+        slotItems.style.transition = 'none';
+        slotItems.style.transform = `translateY(-${currentTranslateY}px)`;
+      }, STOP_DURATION);
+    }
+
+    function resetGame() {
+      if (isSpinning && spinInterval) {
+        cancelAnimationFrame(spinInterval);
+      }
+
+      isSpinning = false;
+      currentTranslateY = 0;
+      spinButton.disabled = false;
+      resetButton.disabled = false;
+      result.textContent = '';
+
+      resetPosition();
+      createSlotItems();
+    }
+
+    function init() {
+      try {
+        createSlotItems();
+
+        // Mouse Events (Fare Olayları)
+        spinButton.addEventListener('mousedown', spin);
+        spinButton.addEventListener('mouseup', stopSpin);
+        spinButton.addEventListener('mouseleave', stopSpin);
+
+        // Touch Events (Dokunmatik Olaylar)
+        spinButton.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          spin();
+        });
+        
+        spinButton.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          stopSpin();
+        });
+
+        // Reset Event (Sıfırlama Olayı)
+        resetButton.addEventListener('click', resetGame);
+
+        // Cleanup Event (Temizleme Olayı)
+        window.addEventListener('beforeunload', () => {
+          if (spinInterval) {
+            cancelAnimationFrame(spinInterval);
+          }
+        });
+
+      } catch (error) {
+        console.error('Başlatma hatası:', error);
+      }
+    }
+
+    // Uygulamayı başlat
+    init();
+  </script>
 </body>
-</html> 
+</html>
